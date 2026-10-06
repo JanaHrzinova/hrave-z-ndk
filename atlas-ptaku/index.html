@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Atlas ptáků a jejich hlasy</title>
+
+  <style>
+    :root{
+      --green:#223d38;
+      --green-hover:#2d5049;
+      --bg:#eceee8;
+      --panel:#f8f7f1;
+      --line:#cfd3ca;
+      --accent:#b15d37;
+      --text:#23312e;
+      --muted:#66726d;
+      --paper:#e9e5d8;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:Georgia,'Times New Roman',serif;
+    }
+    .page{max-width:none;margin:0;padding:0 0 34px}
+    header{
+      background:var(--green);
+      color:#fff;
+      text-align:center;
+      margin:0 0 30px;
+      padding:20px 32px 18px;
+      box-shadow:0 3px 12px rgba(0,0,0,.12);
+    }
+    header h1{
+      margin:0;
+      font-size:42px;
+      font-weight:500;
+      letter-spacing:0;
+      color:#fff;
+    }
+    .subtitle{
+      margin-top:7px;
+      font:14px/1.4 Arial,sans-serif;
+      color:rgba(255,255,255,.78);
+    }
+    .subtitle::before,.subtitle::after{content:none}
+    main{
+      max-width:1500px;
+      margin:0 auto;
+      padding:0 28px;
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 300px;
+      gap:42px;
+      justify-content:center;
+      align-items:start;
+    }
+    .viewer{justify-self:center;width:100%;max-width:1000px}
+    .frame{
+      position:relative;
+      display:block;
+      background:var(--paper);
+      padding:14px;
+      border:1px solid var(--line);
+      box-shadow:0 8px 24px rgba(0,0,0,.12);
+      overflow:hidden;
+      touch-action:none;
+      cursor:grab;
+      max-width:100%;
+    }
+    .frame::before{content:none}
+    .frame.dragging{cursor:grabbing}
+    .frame img{
+      display:block;
+      width:auto;
+      height:min(80vh,880px);
+      max-width:100%;
+      margin:0 auto;
+      object-fit:contain;
+      background:#fff;
+      transform-origin:center center;
+      user-select:none;
+      -webkit-user-drag:none;
+      will-change:transform;
+    }
+    .zoomControls{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+    .zoomControls button,
+    .nav button,
+    .actionButton,
+    .list button{
+      appearance:none;
+      border:0;
+      background:var(--green);
+      color:#fff;
+      text-decoration:none;
+      font:600 14px/1.2 Arial,sans-serif;
+      padding:11px 16px;
+      cursor:pointer;
+      box-shadow:none;
+    }
+    .zoomControls button:hover,
+    .nav button:hover,
+    .actionButton:hover,
+    .list button:hover{background:var(--green-hover)}
+    .zoomControls button{
+      min-width:52px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--green);
+    }
+    .zoomControls button:hover{background:#f4f5f1}
+    .nav{display:flex;justify-content:center;align-items:center;gap:12px;margin-top:18px;flex-wrap:wrap}
+    .nav button[disabled]{opacity:.45;cursor:not-allowed}
+    .counter{font:14px/1.2 Arial,sans-serif;color:var(--muted);min-width:95px;text-align:center}
+    .panel{
+      width:300px;
+      background:var(--panel);
+      border:1px solid var(--line);
+      padding:20px;
+      box-shadow:0 8px 22px rgba(0,0,0,.08);
+      position:relative;
+    }
+    .panel::before{content:none}
+    .eyebrow{
+      font:700 11px/1.2 Arial,sans-serif;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      color:var(--muted);
+      margin-bottom:12px
+    }
+    .panel h2{font-size:31px;font-weight:500;margin:0 0 8px;color:var(--text)}
+    .latin{font-size:16px;font-style:italic;margin-bottom:18px;color:#59635f}
+    .audioLabel{
+      font:600 11px/1.3 Arial,sans-serif;
+      color:var(--muted);
+      margin-top:8px;
+      text-transform:uppercase;
+      letter-spacing:.1em
+    }
+    audio{width:100%;margin-top:12px;filter:none}
+    .soundBlock + .soundBlock{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+    .soundSource{margin-top:7px;font:12px/1.45 Arial,sans-serif}
+    .soundSource a,.details a{color:var(--green)}
+    .details{margin-top:20px;padding-top:16px;border-top:1px solid var(--line);font:14px/1.5 Arial,sans-serif}
+    .details .actionButton{
+      display:block;
+      width:100%;
+      margin-top:14px;
+      text-align:center;
+      color:#fff;
+    }
+    .sourceBox{
+      margin-bottom:14px;
+      padding:13px 14px;
+      background:#eef1eb;
+      border:0;
+      border-left:4px solid var(--green);
+    }
+    .sourceLabel{
+      font:700 11px/1.2 Arial,sans-serif;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:var(--green);
+      margin-bottom:6px
+    }
+    .citation{
+      font-size:14px;
+      font-style:italic;
+      font-weight:600;
+      color:#35443f;
+      line-height:1.45
+    }
+    .listTrigger{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
+    .listTrigger .actionButton{width:100%;margin-top:0}
+    dialog{border:0;padding:0;background:transparent;max-width:min(600px,calc(100vw - 32px));width:100%}
+    dialog::backdrop{background:rgba(20,32,29,.58)}
+    .dialogBox{
+      background:var(--panel);
+      border:1px solid var(--line);
+      box-shadow:0 18px 50px rgba(0,0,0,.28);
+      padding:24px
+    }
+    .dialogHead{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px}
+    .dialogHead h3{margin:0;font:500 28px/1.2 Georgia,'Times New Roman',serif;color:var(--text)}
+    .closeButton{border:0;background:transparent;font:28px/1 Arial,sans-serif;cursor:pointer;color:var(--green);padding:2px 6px}
+    .listItems{display:flex;flex-direction:column;gap:10px}
+    .list button{
+      width:100%;
+      text-align:left;
+      background:#dfe5de;
+      color:var(--text);
+      border:1px solid #cfd6cc;
+      padding:12px 14px
+    }
+    .list button.active{
+      background:var(--green);
+      color:#fff;
+      border-color:var(--green)
+    }
+    .list small{display:block;font-style:italic;opacity:.82;margin-top:4px}
+    .error{
+      padding:16px;
+      border:1px solid #c98;
+      background:#fff4ef;
+      color:#6d2b19;
+      font:14px Arial,sans-serif;
+      margin-top:12px;
+      text-align:left
+    }
+    @media (max-width:1100px){
+      main{grid-template-columns:1fr;gap:28px;padding:0 16px}
+      .viewer{max-width:100%}
+      .panel{width:min(720px,100%);margin:0 auto}
+    }
+    @media (max-width:700px){
+      .page{padding:0 0 26px}
+      header{margin:0 0 22px;padding:16px 20px}
+      header h1{font-size:32px}
+      .subtitle{font-size:13px}
+      .frame{padding:9px}
+      .frame img{height:auto;max-height:74vh;max-width:100%}
+      .panel{padding:16px}
+      .panel h2{font-size:27px}
+    }
+  </style>
+
+
+<style id="hub-navigation-style">
+  .hub-back-link{position:fixed;z-index:9999;top:12px;left:12px;display:inline-block;padding:8px 11px;background:rgba(255,255,255,.94);color:#27443d!important;border:1px solid rgba(39,68,61,.25);box-shadow:0 3px 12px rgba(0,0,0,.12);font:600 12px/1.2 Arial,sans-serif;text-decoration:none!important;backdrop-filter:blur(4px)}
+  .hub-back-link:hover,.hub-back-link:focus-visible{background:#fff;outline:2px solid rgba(39,68,61,.25);outline-offset:2px}
+  @media(max-width:600px){.hub-back-link{top:8px;left:8px;padding:7px 9px;font-size:11px}}
+</style>
+</head>
+<body>
+  <a class="hub-back-link" href="../index.html" aria-label="Zpět na rozcestník">← Všechny aplikace</a>
+
+  <div class="page">
+    <header>
+      <h1>Atlas ptáků a jejich hlasy</h1>
+      
+    </header>
+
+    <main>
+      <section class="viewer">
+        <div class="frame" id="imageFrame">
+          <img id="birdImage" alt="" draggable="false" />
+        </div>
+        <div class="zoomControls" aria-label="Ovládání přiblížení obrazu">
+          <button id="zoomOutBtn" type="button" aria-label="Oddálit">−</button>
+          <button id="zoomResetBtn" type="button">100 %</button>
+          <button id="zoomInBtn" type="button" aria-label="Přiblížit">+</button>
+        </div>
+        <div id="imgError" class="error" hidden>
+          Obrázek se nepodařilo načíst. Zkuste jej otevřít přímo přes odkaz v pravém panelu.
+        </div>
+        <div class="nav">
+          <button id="prevBtn" type="button">Předchozí tabule</button>
+          <div class="counter" id="counter"></div>
+          <button id="nextBtn" type="button">Další tabule</button>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="eyebrow">Ozvučená tabule</div>
+        <h2 id="birdName"></h2>
+        <div class="latin" id="birdLatin"></div>
+
+        <div id="audioArea"></div>
+
+        <div class="details">
+          <div class="sourceBox"><div class="sourceLabel">Zdroj obrázku</div><div id="sourceCitation" class="citation"></div></div>
+          <a id="pageLink" class="actionButton" href="#" target="_blank" rel="noopener">Otevřít stránku v České digitální knihovně</a>
+        </div>
+
+        <div class="listTrigger">
+          <button id="openListBtn" class="actionButton" type="button">Seznam tabulí</button>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <dialog id="listDialog">
+    <div class="dialogBox">
+      <div class="dialogHead">
+        <h3>Seznam tabulí</h3>
+        <button id="closeListBtn" class="closeButton" type="button" aria-label="Zavřít seznam">×</button>
+      </div>
+      <div class="list">
+        <div class="listItems" id="listItems"></div>
+      </div>
+    </div>
+  </dialog>
+
+<script>
+    const plates = [
+      {
+        name: 'Žluva hajní',
+        latin: 'Oriolus oriolus',
+        image: 'https://cdk-api.dev.ceskadigitalniknihovna.cz/search/iiif/uuid:c49e4a70-c2eb-11e6-861d-5ef3fc9ae867/full/max/0/default.jpg',
+        page: 'https://ceskadigitalniknihovna.cz/uuid/uuid:c49e4a70-c2eb-11e6-861d-5ef3fc9ae867',
+        sounds: [
+          {
+            page: 'https://commons.wikimedia.org/wiki/File:Oriolus_oriolus_voice.ogg',
+            file: 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Oriolus_oriolus_voice.ogg'
+          }
+        ],
+        source: 'Velký atlas ptáků ku Kněžourkovu Velkému přírodopisu ptáků. Díl 2. Praha: Kober, 1910.'
+      },
+      {
+        name: 'Sojka obecná',
+        latin: 'Garrulus glandarius',
+        image: 'https://cdk-api.dev.ceskadigitalniknihovna.cz/search/iiif/uuid:b069ac30-c2ea-11e6-a237-005056827e51/full/max/0/default.jpg',
+        page: 'https://ceskadigitalniknihovna.cz/uuid/uuid:b069ac30-c2ea-11e6-a237-005056827e51',
+        sounds: [
+          {
+            page: 'https://commons.wikimedia.org/wiki/File:Garrulus_glandarius_iphigenia.ogg',
+            file: 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Garrulus_glandarius_iphigenia.ogg'
+          }
+        ],
+        source: 'Velký atlas ptáků ku Kněžourkovu Velkému přírodopisu ptáků. Díl 2. Praha: Kober, 1910.'
+      },
+      {
+        name: 'Hýl obecný',
+        latin: 'Pyrrhula pyrrhula',
+        image: 'https://cdk-api.dev.ceskadigitalniknihovna.cz/search/iiif/uuid:bc5a33b0-c2eb-11e6-861d-5ef3fc9ae867/full/max/0/default.jpg',
+        page: 'https://ceskadigitalniknihovna.cz/uuid/uuid:bc5a33b0-c2eb-11e6-861d-5ef3fc9ae867',
+        sounds: [
+          {
+            page: 'https://commons.wikimedia.org/wiki/File:Bullfinch_(Pyrrhula_pyrrhula)_(W1CDR0001509_BD14).ogg',
+            file: 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Bullfinch_%28Pyrrhula_pyrrhula%29_%28W1CDR0001509_BD14%29.ogg'
+          }
+        ],
+        source: 'Velký atlas ptáků ku Kněžourkovu Velkému přírodopisu ptáků. Díl 2. Praha: Kober, 1910.'
+      },
+      {
+        name: 'Sýkora parukářka',
+        latin: 'Lophophanes cristatus',
+        image: 'https://cdk-api.dev.ceskadigitalniknihovna.cz/search/iiif/uuid:d3d4a390-c2eb-11e6-861d-5ef3fc9ae867/full/max/0/default.jpg',
+        page: 'https://ceskadigitalniknihovna.cz/uuid/uuid:d3d4a390-c2eb-11e6-861d-5ef3fc9ae867',
+        sounds: [
+          {
+            page: 'https://commons.wikimedia.org/wiki/File:Crested_Tit_(Lophophanes_cristatus)_(W1CDR0001462_BD1).ogg',
+            file: 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Crested_Tit_%28Lophophanes_cristatus%29_%28W1CDR0001462_BD1%29.ogg'
+          }
+        ],
+        source: 'Velký atlas ptáků ku Kněžourkovu Velkému přírodopisu ptáků. Díl 2. Praha: Kober, 1910.'
+      },
+      {
+        name: 'Žluna zelená',
+        latin: 'Picus viridis',
+        image: 'https://cdk-api.dev.ceskadigitalniknihovna.cz/search/iiif/uuid:9b51ba30-c2e6-11e6-b5e2-001018b5eb5c/full/max/0/default.jpg',
+        page: 'https://ceskadigitalniknihovna.cz/uuid/uuid:9b51ba30-c2e6-11e6-b5e2-001018b5eb5c',
+        sounds: [
+          {
+            page: 'https://commons.wikimedia.org/wiki/File:Green_Woodpecker_(Picus_viridis)_(W1CDR0001497_BD6).ogg',
+            file: 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Green_Woodpecker_%28Picus_viridis%29_%28W1CDR0001497_BD6%29.ogg'
+          }
+        ],
+        source: 'Velký atlas ptáků ku Kněžourkovu Velkému přírodopisu ptáků. Díl 3. Praha: Kober, 1911.'
+      },
+      {
+        name: 'Datel černý',
+        latin: 'Dryocopus martius',
+        image: 'https://cdk-api.dev.ceskadigitalniknihovna.cz/search/iiif/uuid:9d3bfe00-c2e6-11e6-b5e2-001018b5eb5c/full/max/0/default.jpg',
+        page: 'https://ceskadigitalniknihovna.cz/uuid/uuid:9d3bfe00-c2e6-11e6-b5e2-001018b5eb5c',
+        sounds: [
+          {
+            page: 'https://commons.wikimedia.org/wiki/File:Spillkr%C3%A5ka_trummar_-_Dendrocopos_martius..ogg',
+            file: 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Spillkr%C3%A5ka_trummar_-_Dendrocopos_martius..ogg'
+          },
+          {
+            page: 'https://cs.wikipedia.org/wiki/Soubor:Dryocopus_martius_call_at_sitting_Kjeee.ogg',
+            file: 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Dryocopus_martius_call_at_sitting_Kjeee.ogg'
+          }
+        ],
+        source: 'Velký atlas ptáků ku Kněžourkovu Velkému přírodopisu ptáků. Díl 3. Praha: Kober, 1911.'
+      },
+      {
+        name: 'Vlha pestrá',
+        latin: 'Merops apiaster',
+        image: 'https://cdk-api.dev.ceskadigitalniknihovna.cz/search/iiif/uuid:9dba2eb0-c2e6-11e6-b5e2-001018b5eb5c/full/max/0/default.jpg',
+        page: 'https://ceskadigitalniknihovna.cz/uuid/uuid:9dba2eb0-c2e6-11e6-b5e2-001018b5eb5c',
+        sounds: [
+          {
+            page: 'https://commons.wikimedia.org/wiki/File:Bijeneter_-_SoundCloud_-_Beeld_en_Geluid.ogg?uselang=cs',
+            file: 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Bijeneter_-_SoundCloud_-_Beeld_en_Geluid.ogg'
+          }
+        ],
+        source: 'Velký atlas ptáků ku Kněžourkovu Velkému přírodopisu ptáků. Díl 3. Praha: Kober, 1911.'
+      },
+      {
+        name: 'Dudek chocholatý',
+        latin: 'Upupa epops',
+        image: 'https://cdk-api.dev.ceskadigitalniknihovna.cz/search/iiif/uuid:9e92db70-c2e6-11e6-b5e2-001018b5eb5c/full/max/0/default.jpg',
+        page: 'https://ceskadigitalniknihovna.cz/uuid/uuid:9e92db70-c2e6-11e6-b5e2-001018b5eb5c',
+        sounds: [
+          {
+            page: 'https://commons.wikimedia.org/wiki/File:Upupa_epops.ogg?uselang=cs',
+            file: 'https://commons.wikimedia.org/wiki/Special:Redirect/file/Upupa_epops.ogg'
+          }
+        ],
+        source: 'Velký atlas ptáků ku Kněžourkovu Velkému přírodopisu ptáků. Díl 3. Praha: Kober, 1911.'
+      }
+    ];
+
+    const img = document.getElementById('birdImage');
+    const imageFrame = document.getElementById('imageFrame');
+    const zoomInBtn = document.getElementById('zoomInBtn');
+    const zoomOutBtn = document.getElementById('zoomOutBtn');
+    const zoomResetBtn = document.getElementById('zoomResetBtn');
+    const err = document.getElementById('imgError');
+    const birdName = document.getElementById('birdName');
+    const birdLatin = document.getElementById('birdLatin');
+    const audioArea = document.getElementById('audioArea');
+    const pageLink = document.getElementById('pageLink');
+    const sourceCitation = document.getElementById('sourceCitation');
+    const counter = document.getElementById('counter');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const listItems = document.getElementById('listItems');
+    const listDialog = document.getElementById('listDialog');
+    const openListBtn = document.getElementById('openListBtn');
+    const closeListBtn = document.getElementById('closeListBtn');
+
+    let currentIndex = 0;
+    let zoom = 1;
+    let panX = 0;
+    let panY = 0;
+    let dragging = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let startPanX = 0;
+    let startPanY = 0;
+    const pointers = new Map();
+    let pinchStartDistance = 0;
+    let pinchStartZoom = 1;
+
+    function clamp(value,min,max){ return Math.min(max,Math.max(min,value)); }
+    function applyTransform(){
+      img.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+      zoomResetBtn.textContent = `${Math.round(zoom*100)} %`;
+    }
+    function resetZoom(){ zoom=1; panX=0; panY=0; applyTransform(); }
+    function setZoom(nextZoom){
+      zoom = clamp(nextZoom,1,5);
+      if(zoom === 1){ panX=0; panY=0; }
+      applyTransform();
+    }
+    function pointerDistance(){
+      const pts=[...pointers.values()];
+      if(pts.length<2) return 0;
+      return Math.hypot(pts[0].x-pts[1].x, pts[0].y-pts[1].y);
+    }
+
+    function buildList(){
+      listItems.innerHTML = '';
+      plates.forEach((plate, index) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.innerHTML = `${plate.name}<small>${plate.latin}</small>`;
+        btn.className = index === currentIndex ? 'active' : '';
+        btn.addEventListener('click', () => { showPlate(index); listDialog.close(); });
+        listItems.appendChild(btn);
+      });
+    }
+
+    function showPlate(index){
+      currentIndex = index;
+      const plate = plates[index];
+
+      birdName.textContent = plate.name;
+      birdLatin.textContent = plate.latin;
+      img.alt = plate.name;
+      pageLink.href = plate.page;
+      sourceCitation.textContent = plate.source;
+
+      audioArea.innerHTML = '';
+      plate.sounds.forEach((sound, soundIndex) => {
+        const block = document.createElement('div');
+        block.className = 'soundBlock';
+
+        const label = document.createElement('div');
+        label.className = 'audioLabel';
+        label.textContent = plate.sounds.length > 1 ? `Přehrát zvuk ${soundIndex + 1}` : 'Přehrát zvuk';
+
+        const player = document.createElement('audio');
+        player.controls = true;
+        player.preload = 'none';
+        player.src = sound.file;
+
+        const source = document.createElement('div');
+        source.className = 'soundSource';
+        const sourceLink = document.createElement('a');
+        sourceLink.href = sound.page;
+        sourceLink.target = '_blank';
+        sourceLink.rel = 'noopener';
+        sourceLink.textContent = 'Zdroj zvuku na Wikimedia Commons';
+        source.appendChild(sourceLink);
+
+        block.appendChild(label);
+        block.appendChild(player);
+        block.appendChild(source);
+        audioArea.appendChild(block);
+      });
+
+      resetZoom();
+      err.hidden = true;
+      img.onload = () => { err.hidden = true; };
+      img.onerror = () => { err.hidden = false; };
+      img.src = plate.image;
+
+      counter.textContent = `Tabule ${index + 1} / ${plates.length}`;
+      prevBtn.disabled = index === 0;
+      nextBtn.disabled = index === plates.length - 1;
+      buildList();
+    }
+
+
+    zoomInBtn.addEventListener('click', () => setZoom(zoom + 0.25));
+    zoomOutBtn.addEventListener('click', () => setZoom(zoom - 0.25));
+    zoomResetBtn.addEventListener('click', resetZoom);
+
+    imageFrame.addEventListener('wheel', (event) => {
+      event.preventDefault();
+      setZoom(zoom + (event.deltaY < 0 ? 0.15 : -0.15));
+    }, {passive:false});
+
+    imageFrame.addEventListener('dblclick', () => {
+      if (zoom > 1) resetZoom(); else setZoom(2);
+    });
+
+    imageFrame.addEventListener('pointerdown', (event) => {
+      imageFrame.setPointerCapture(event.pointerId);
+      pointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+      if (pointers.size === 1 && zoom > 1) {
+        dragging = true;
+        imageFrame.classList.add('dragging');
+        dragStartX = event.clientX;
+        dragStartY = event.clientY;
+        startPanX = panX;
+        startPanY = panY;
+      } else if (pointers.size === 2) {
+        dragging = false;
+        imageFrame.classList.remove('dragging');
+        pinchStartDistance = pointerDistance();
+        pinchStartZoom = zoom;
+      }
+    });
+
+    imageFrame.addEventListener('pointermove', (event) => {
+      if (pointers.has(event.pointerId)) pointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+      if (pointers.size === 2 && pinchStartDistance > 0) {
+        const distance = pointerDistance();
+        setZoom(pinchStartZoom * (distance / pinchStartDistance));
+        return;
+      }
+      if (dragging && zoom > 1) {
+        panX = startPanX + (event.clientX - dragStartX);
+        panY = startPanY + (event.clientY - dragStartY);
+        applyTransform();
+      }
+    });
+
+    function releasePointer(event){
+      pointers.delete(event.pointerId);
+      if (pointers.size < 2) pinchStartDistance = 0;
+      if (pointers.size === 0) {
+        dragging = false;
+        imageFrame.classList.remove('dragging');
+      }
+    }
+    imageFrame.addEventListener('pointerup', releasePointer);
+    imageFrame.addEventListener('pointercancel', releasePointer);
+
+    prevBtn.addEventListener('click', () => {
+      if (currentIndex > 0) showPlate(currentIndex - 1);
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (currentIndex < plates.length - 1) showPlate(currentIndex + 1);
+    });
+
+    openListBtn.addEventListener('click', () => { buildList(); listDialog.showModal(); });
+    closeListBtn.addEventListener('click', () => listDialog.close());
+    listDialog.addEventListener('click', (event) => {
+      if (event.target === listDialog) listDialog.close();
+    });
+
+    showPlate(0);
+  </script>
+</body>
+</html>
+
+  <script src="../typografie.js"></script>
+</body>
+</html>

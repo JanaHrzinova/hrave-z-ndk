@@ -1,0 +1,755 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vystřihni pohádku!</title>
+<style>
+:root{
+  --ink:#30343b;
+  --paper:#fff8ee;
+  --cream:#fffdf8;
+  --coral:#e87563;
+  --coral-dark:#c95749;
+  --teal:#4f8f87;
+  --teal-dark:#336c66;
+  --mustard:#e3b44c;
+  --lavender:#8c79a8;
+  --sky:#8eb7c7;
+  --line:#e5d7c5;
+  --muted:#736c68;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Georgia,'Times New Roman',serif;
+  background:linear-gradient(180deg,#fff4e6 0,#fffaf3 42%,#f7f3ee 100%);
+  color:var(--ink);
+  min-height:100vh;
+}
+header{
+  position:relative;
+  overflow:hidden;
+  background:linear-gradient(115deg,#4f8f87 0%,#5d9c91 46%,#8c79a8 100%);
+  color:#fffdf8;
+  padding:34px 20px 29px;
+  text-align:center;
+  border-bottom:0;
+  box-shadow:0 8px 24px rgba(66,74,73,.15);
+}
+header h1{
+  position:relative;
+  z-index:1;
+  margin:0;
+  font-size:clamp(1.68rem,4vw,3.76rem);
+  font-weight:600;
+  letter-spacing:.01em;
+  text-shadow:0 2px 0 rgba(38,62,58,.14);
+}
+header p{
+  position:relative;
+  z-index:1;
+  max-width:820px;
+  margin:14px auto 0;
+  font-size:1.08rem;
+  line-height:1.58;
+  color:#fffaf2;
+}
+main{max-width:1180px;margin:auto;padding:38px 20px 60px}
+.controls{text-align:center;margin-bottom:30px}
+button{
+  font:700 1rem Georgia,serif;
+  border:0;
+  border-radius:999px;
+  background:var(--coral);
+  color:#fff;
+  padding:14px 25px;
+  cursor:pointer;
+  box-shadow:0 5px 0 var(--coral-dark),0 9px 20px rgba(111,78,69,.15);
+  transition:transform .15s ease,box-shadow .15s ease,background .15s ease;
+}
+button:hover{background:#ef806d;transform:translateY(-1px);box-shadow:0 6px 0 var(--coral-dark),0 11px 22px rgba(111,78,69,.17)}
+button:active{transform:translateY(3px);box-shadow:0 2px 0 var(--coral-dark),0 5px 12px rgba(111,78,69,.12)}
+button:disabled{opacity:.6;cursor:wait;transform:none}
+.hint{margin:14px auto 0;color:#68615c;max-width:760px;line-height:1.55}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.cards:empty{display:none}
+.card{
+  background:rgba(255,253,248,.94);
+  border:1px solid var(--line);
+  border-radius:18px;
+  box-shadow:0 12px 30px rgba(91,73,57,.12);
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  min-height:360px;
+  position:relative;
+  overflow:hidden;
+}
+.card:before{
+  content:"";
+  position:absolute;
+  left:0;right:0;top:0;height:7px;
+  background:var(--coral);
+  pointer-events:none;
+}
+.card:nth-child(2):before{background:var(--mustard)}
+.card:nth-child(3):before{background:var(--lavender)}
+.image-wrap{
+  background:linear-gradient(145deg,#f0e7d9,#e9f1ee);
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:300px;
+  overflow:hidden;
+  position:relative;
+  z-index:1;
+  margin-top:3px;
+}
+.image-wrap img{width:100%;height:100%;max-height:520px;object-fit:contain;display:block;transform-origin:center center}
+.meta{position:relative;z-index:1;padding:14px 8px 6px;display:flex;justify-content:space-between;gap:12px;align-items:center}
+.category{
+  font-size:.82rem;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--teal-dark);
+  font-weight:700;
+  background:#e9f5f2;
+  border-radius:999px;
+  padding:6px 10px;
+}
+.card:nth-child(2) .category{background:#fff3cf;color:#8f6b18}
+.card:nth-child(3) .category{background:#f0eafa;color:#695780}
+.source{color:#5f655f;font-size:.9rem;text-decoration:none;border-bottom:1px dotted #8b918c}
+.source:hover{color:var(--coral-dark)}
+.error{padding:28px;text-align:center;color:#8e483f}
+.storybox{
+  margin-top:34px;
+  background:rgba(255,253,248,.92);
+  border:1px solid var(--line);
+  border-radius:20px;
+  box-shadow:0 14px 34px rgba(91,73,57,.10);
+  padding:28px 26px 26px;
+  position:relative;
+  overflow:visible;
+}
+.storybox:before{
+  content:"✦  ✧  ✦";
+  display:block;
+  text-align:center;
+  color:var(--mustard);
+  font-size:1.05rem;
+  letter-spacing:.35em;
+  margin-bottom:8px;
+}
+.storybox h2{text-align:center;font-size:1.65rem;margin:0 0 8px;color:#45434a}
+.storybox p{text-align:center;margin:0 auto 18px;max-width:700px;line-height:1.55;color:#6f6863}
+.storybox textarea{
+  width:100%;
+  min-height:190px;
+  padding:17px 18px;
+  border:2px solid #e7d8c8;
+  border-radius:14px;
+  background:#fffefb;
+  font:1rem/1.65 Georgia,serif;
+  color:#2d332e;
+  resize:vertical;
+  outline:none;
+  transition:border-color .15s ease,box-shadow .15s ease;
+}
+.storybox textarea:focus{border-color:#91bdb5;box-shadow:0 0 0 4px rgba(79,143,135,.12)}
+.small-actions{display:flex;justify-content:center;gap:10px;margin-top:14px;flex-wrap:wrap}
+.small-actions button{padding:10px 17px;font-size:.92rem;box-shadow:none;border-radius:999px}
+.small-actions button:hover{transform:translateY(-1px);box-shadow:0 5px 12px rgba(76,62,55,.12)}
+.small-actions .download{background:var(--teal);}
+.small-actions .download:hover{background:#5b9f96}
+.download-wrap{position:relative;display:inline-block;z-index:40}
+.download-choices{
+  position:absolute;
+  z-index:30;
+  right:0;
+  top:calc(100% + 8px);
+  min-width:190px;
+  padding:8px;
+  display:grid;
+  gap:7px;
+  background:#fffefb;
+  border:1px solid var(--line);
+  border-radius:14px;
+  box-shadow:0 12px 28px rgba(76,62,55,.18);
+}
+.download-choices[hidden]{display:none}
+.small-actions .download-choices button{
+  width:100%;
+  margin:0;
+  background:#f3ece3;
+  color:#4d4944;
+  text-align:left;
+  white-space:nowrap;
+}
+.small-actions .download-choices button:hover{background:#e9ddd0}
+.small-actions .dictate{background:var(--lavender)}
+.small-actions .dictate:hover{background:#9a86b7}
+.small-actions .dictate.active{background:#c55757}
+#copy{background:var(--mustard);color:#493b19}
+#clear{background:#8ea6ad}
+.speech-status,.export-status{text-align:center;min-height:1.4em;margin-top:10px;color:#6b6560;font-size:.92rem}
+.empty{
+  text-align:center;
+  padding:48px 20px;
+  border:2px dashed #d8c4aa;
+  border-radius:18px;
+  background:rgba(255,255,255,.52);
+  grid-column:1/-1;
+  color:#6d6259;
+}
+footer{text-align:center;color:#766f69;padding:0 20px 32px;font-size:.9rem}
+@media(max-width:820px){
+  header{padding-top:34px}
+  .cards{grid-template-columns:1fr}
+  .card{min-height:0}
+  .image-wrap{min-height:220px}
+  .small-actions{flex-wrap:wrap}
+}
+</style>
+
+<style id="hub-navigation-style">
+  .hub-back-link{position:fixed;z-index:9999;top:12px;left:12px;display:inline-block;padding:8px 11px;background:rgba(255,255,255,.94);color:#27443d!important;border:1px solid rgba(39,68,61,.25);box-shadow:0 3px 12px rgba(0,0,0,.12);font:600 12px/1.2 Arial,sans-serif;text-decoration:none!important;backdrop-filter:blur(4px)}
+  .hub-back-link:hover,.hub-back-link:focus-visible{background:#fff;outline:2px solid rgba(39,68,61,.25);outline-offset:2px}
+  @media(max-width:600px){.hub-back-link{top:8px;left:8px;padding:7px 9px;font-size:11px}}
+</style>
+</head>
+<body>
+  <a class="hub-back-link" href="../index.html" aria-label="Zpět na rozcestník">← Všechny aplikace</a>
+<header><h1>Vystřihni pohádku!</h1><p>Inspirujte se výstřižky ze starých knížek a vyprávějte vlastní příběhy.</p></header>
+<main>
+<div class="controls"><button id="draw">Vylosovat 3 výstřižky</button></div>
+<section class="cards" id="cards"></section>
+<section class="storybox"><h2>Váš příběh</h2><p>Co tyto tři obrazy spojuje? Co se stalo předtím, co se děje právě teď a co bude následovat?</p><textarea id="story" placeholder="Začněte psát nebo diktovat…"></textarea><div class="small-actions"><button id="dictate" class="dictate" type="button">🎤 Začít diktovat</button><button id="copy">Kopírovat text</button><button id="clear">Vymazat text</button><div class="download-wrap"><button id="downloadStory" class="download" type="button" aria-expanded="false" aria-controls="downloadChoices">Stáhnout příběh</button><div id="downloadChoices" class="download-choices" hidden><button id="downloadWord" type="button">Stáhnout do Wordu</button><button id="downloadPdf" type="button">Stáhnout do PDF</button></div></div></div><div id="speechStatus" class="speech-status" aria-live="polite"></div><div id="exportStatus" class="export-status" aria-live="polite"></div></section>
+</main>
+
+<script src="obrazky.js"></script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const items = Array.isArray(window.OBRAZKY) ? window.OBRAZKY : [];
+  const categoryOrder = ['postavy a tvorové','místa a objekty','emoce a akce'];
+  const cards = $('cards');
+  const drawBtn = $('draw');
+  let busy = false;
+  let currentResults = [];
+
+  function normalizeCategory(v) { return String(v || '').trim(); }
+
+  // Stejný princip jako ve fungující aplikaci s recepty.
+  function parseItem(item) {
+    const clip = item.clip || item.url;
+    const iiif = item.iiif || item.info || item.infoJson;
+    const category = normalizeCategory(item.category);
+    if (!clip || !iiif) throw new Error('Záznam nemá odkaz na výstřižek nebo IIIF.');
+
+    const u = new URL(clip);
+    const bb = (u.searchParams.get('bb') || '').split(',').map(Number);
+    if (bb.length !== 4 || bb.some(n => !Number.isFinite(n))) {
+      throw new Error('Záznam nemá platný parametr bb.');
+    }
+
+    const service = String(iiif)
+      .replace(/\/info\.json(?:\?.*)?$/i, '')
+      .replace(/\/$/, '');
+
+    const rotationRaw = String(item.rotation || item.otoceni || item['otočení'] || '').trim().toLowerCase();
+    const rotation = rotationRaw === 'vpravo' ? 90 : rotationRaw === 'vlevo' ? -90 : rotationRaw === '180' ? 180 : 0;
+
+    return { clip, service, category, region: bb.map(n => Math.round(n)).join(','), rotation };
+  }
+
+  function candidates(service, region) {
+    return [
+      `${service}/${region}/1000,/0/default.jpg`,
+      `${service}/${region}/max/0/default.jpg`,
+      `${service}/${region}/full/0/default.jpg`
+    ];
+  }
+
+  function testImage(url) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(url);
+      img.onerror = () => reject(new Error('image load failed'));
+      img.src = url;
+    });
+  }
+
+  async function resolveImage(item) {
+    const parsed = parseItem(item);
+    for (const url of candidates(parsed.service, parsed.region)) {
+      try {
+        await testImage(url);
+        return { item, parsed, url };
+      } catch (_) {}
+    }
+    throw new Error('Výstřižek se nepodařilo načíst.');
+  }
+
+  function shuffled(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  async function chooseWorkingFromCategory(category) {
+    const pool = shuffled(items.filter(x => normalizeCategory(x.category) === category));
+    if (!pool.length) throw new Error(`Kategorie „${category}“ je prázdná.`);
+    for (const item of pool) {
+      try { return await resolveImage(item); } catch (_) {}
+    }
+    throw new Error(`V kategorii „${category}“ se nepodařilo načíst žádný výstřižek.`);
+  }
+
+  function displayCategory(c) { return c.charAt(0).toUpperCase() + c.slice(1); }
+
+  function render(results) {
+    currentResults = results.slice();
+    cards.innerHTML = '';
+    results.forEach((result, i) => {
+      const article = document.createElement('article');
+      article.className = 'card';
+
+      const wrap = document.createElement('div');
+      wrap.className = 'image-wrap';
+      const img = document.createElement('img');
+      img.alt = `Náhodný obrazový výstřižek ${i + 1}`;
+      const rotation = result.parsed.rotation || 0;
+      img.onload = () => {
+        const naturalW = img.naturalWidth || 1;
+        const naturalH = img.naturalHeight || 1;
+        const quarterTurn = Math.abs(rotation) === 90;
+
+        // Rámeček vždy respektuje skutečný poměr stran zobrazeného výstřižku.
+        // Při otočení o 90° se šířka a výška prohodí.
+        wrap.style.minHeight = '0';
+        wrap.style.aspectRatio = quarterTurn
+          ? `${naturalH} / ${naturalW}`
+          : `${naturalW} / ${naturalH}`;
+
+        if (rotation) {
+          if (quarterTurn) {
+            const ratio = naturalW / naturalH;
+            const scale = Math.max(ratio, 1 / ratio);
+            img.style.transform = `rotate(${rotation}deg) scale(${scale})`;
+          } else {
+            img.style.transform = `rotate(${rotation}deg)`;
+          }
+        } else {
+          img.style.transform = 'none';
+        }
+      };
+      img.src = result.url;
+      wrap.appendChild(img);
+
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      const source = document.createElement('a');
+      source.className = 'source';
+      source.href = result.parsed.clip;
+      source.target = '_blank';
+      source.rel = 'noopener';
+      source.textContent = 'Otevřít zdroj';
+      meta.appendChild(source);
+
+      article.append(wrap, meta);
+      cards.appendChild(article);
+    });
+  }
+
+  async function draw() {
+    if (busy) return;
+    busy = true;
+    drawBtn.disabled = true;
+    drawBtn.textContent = 'Načítám výstřižky…';
+    cards.innerHTML = '<div class="empty">Hledám tři výstřižky…</div>';
+    try {
+      const results = [];
+      for (const category of categoryOrder) {
+        results.push(await chooseWorkingFromCategory(category));
+      }
+      render(results);
+      drawBtn.textContent = 'Vylosovat jiné 3 výstřižky';
+    } catch (e) {
+      cards.innerHTML = `<div class="empty">${e.message}</div>`;
+      drawBtn.textContent = 'Zkusit znovu';
+    } finally {
+      drawBtn.disabled = false;
+      busy = false;
+    }
+  }
+
+
+
+  async function imageForWord(result) {
+    const response = await fetch(result.url, { mode: 'cors' });
+    if (!response.ok) throw new Error('Nepodařilo se stáhnout jeden z výstřižků.');
+    const blob = await response.blob();
+    const bitmap = await createImageBitmap(blob);
+
+    const angle = result.parsed.rotation || 0;
+    const swap = Math.abs(angle) === 90;
+    const sourceW = bitmap.width;
+    const sourceH = bitmap.height;
+    const rotatedW = swap ? sourceH : sourceW;
+    const rotatedH = swap ? sourceW : sourceH;
+    const maxSide = 1200;
+    const scale = Math.min(1, maxSide / Math.max(rotatedW, rotatedH));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(rotatedW * scale));
+    canvas.height = Math.max(1, Math.round(rotatedH * scale));
+    const ctx = canvas.getContext('2d');
+    ctx.save();
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate(angle * Math.PI / 180);
+    ctx.drawImage(bitmap, -sourceW * scale / 2, -sourceH * scale / 2, sourceW * scale, sourceH * scale);
+    ctx.restore();
+    bitmap.close();
+
+    const pngBlob = await new Promise((resolve, reject) => {
+      canvas.toBlob(b => b ? resolve(b) : reject(new Error('Obrázek se nepodařilo připravit pro Word.')), 'image/png');
+    });
+    return {
+      data: await pngBlob.arrayBuffer(),
+      dataUrl: canvas.toDataURL('image/png'),
+      width: canvas.width,
+      height: canvas.height,
+      category: displayCategory(result.parsed.category),
+      source: result.parsed.clip
+    };
+  }
+
+  function setExportBusy(active) {
+    $('downloadStory').disabled = active;
+    $('downloadWord').disabled = active;
+    $('downloadPdf').disabled = active;
+  }
+
+  async function downloadWord() {
+    const status = $('exportStatus');
+    const button = $('downloadWord');
+    const storyText = $('story').value.trim();
+
+    if (!currentResults.length) {
+      status.textContent = 'Nejdříve vylosujte tři výstřižky.';
+      return;
+    }
+    if (!storyText) {
+      status.textContent = 'Nejdříve napište svůj příběh.';
+      return;
+    }
+
+    setExportBusy(true);
+    status.textContent = 'Připravuji dokument Word…';
+
+    try {
+      const docx = await import('https://cdn.jsdelivr.net/npm/docx@8.5.0/+esm');
+      const { Document, Packer, Paragraph, TextRun, ImageRun, AlignmentType, HeadingLevel } = docx;
+      const preparedImages = [];
+      for (const result of currentResults) preparedImages.push(await imageForWord(result));
+
+      const children = [
+        new Paragraph({
+          text: 'Vystřihni pohádku!',
+          heading: HeadingLevel.TITLE,
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 260 }
+        }),
+        new Paragraph({
+          children: [new TextRun({ text: 'Vylosované obrazové podněty', bold: true, size: 26 })],
+          spacing: { after: 160 }
+        })
+      ];
+
+      preparedImages.forEach((img, index) => {
+        const maxWidth = 520;
+        const maxHeight = 300;
+        const scale = Math.min(maxWidth / img.width, maxHeight / img.height, 1);
+        const w = Math.max(1, Math.round(img.width * scale));
+        const h = Math.max(1, Math.round(img.height * scale));
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: `${index + 1}. ${img.category}`, bold: true })],
+            spacing: { before: 120, after: 80 }
+          }),
+          new Paragraph({
+            children: [new ImageRun({ type: 'png', data: img.data, transformation: { width: w, height: h } })],
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 100 }
+          }),
+          new Paragraph({
+            children: [new TextRun({ text: `Zdroj: ${img.source}`, size: 18, italics: true })],
+            spacing: { after: 120 }
+          })
+        );
+      });
+
+      children.push(
+        new Paragraph({
+          children: [new TextRun({ text: 'Příběh', bold: true, size: 28 })],
+          spacing: { before: 260, after: 140 }
+        })
+      );
+
+      storyText.split(/\n+/).forEach(part => {
+        children.push(new Paragraph({
+          children: [new TextRun({ text: part || ' ', size: 22 })],
+          spacing: { after: 120, line: 330 }
+        }));
+      });
+
+      const doc = new Document({
+        creator: 'Vystřihni pohádku!',
+        title: 'Vystřihni pohádku!',
+        sections: [{
+          properties: {
+            page: { margin: { top: 900, right: 900, bottom: 900, left: 900 } }
+          },
+          children
+        }]
+      });
+
+      const out = await Packer.toBlob(doc);
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(out);
+      a.download = 'muj-pribeh.docx';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+      status.textContent = 'Dokument Word byl připraven ke stažení.';
+    } catch (e) {
+      console.error(e);
+      status.textContent = 'Word se nepodařilo vytvořit. Zkontrolujte připojení k internetu a zkuste to znovu.';
+    } finally {
+      setExportBusy(false);
+    }
+  }
+
+  function loadScriptOnce(src, ready) {
+    if (ready()) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+      const existing = [...document.scripts].find(script => script.src === src);
+      if (existing) {
+        existing.addEventListener('load', () => ready() ? resolve() : reject(new Error('Knihovna se nenačetla.')), { once: true });
+        existing.addEventListener('error', reject, { once: true });
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = src;
+      script.onload = () => ready() ? resolve() : reject(new Error('Knihovna se nenačetla.'));
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
+
+  async function ensurePdfMake() {
+    await loadScriptOnce(
+      'https://cdn.jsdelivr.net/npm/pdfmake@0.2.12/build/pdfmake.min.js',
+      () => Boolean(window.pdfMake)
+    );
+    await loadScriptOnce(
+      'https://cdn.jsdelivr.net/npm/pdfmake@0.2.12/build/vfs_fonts.js',
+      () => Boolean(window.pdfMake && window.pdfMake.vfs)
+    );
+  }
+
+  async function downloadPdf() {
+    const status = $('exportStatus');
+    const storyText = $('story').value.trim();
+
+    if (!currentResults.length) {
+      status.textContent = 'Nejdříve vylosujte tři výstřižky.';
+      return;
+    }
+    if (!storyText) {
+      status.textContent = 'Nejdříve napište svůj příběh.';
+      return;
+    }
+
+    setExportBusy(true);
+    status.textContent = 'Připravuji PDF…';
+
+    try {
+      await ensurePdfMake();
+      const preparedImages = [];
+      for (const result of currentResults) preparedImages.push(await imageForWord(result));
+
+      const content = [
+        { text: 'Vystřihni pohádku!', style: 'title' },
+        { text: 'Vylosované obrazové podněty', style: 'sectionTitle', margin: [0, 0, 0, 10] }
+      ];
+
+      preparedImages.forEach((img, index) => {
+        content.push(
+          { text: `${index + 1}. ${img.category}`, bold: true, margin: [0, 8, 0, 6] },
+          { image: img.dataUrl, fit: [470, 280], alignment: 'center', margin: [0, 0, 0, 6] },
+          { text: `Zdroj: ${img.source}`, style: 'source', margin: [0, 0, 0, 10] }
+        );
+      });
+
+      content.push({ text: 'Příběh', style: 'sectionTitle', margin: [0, 14, 0, 8] });
+      storyText.split(/\n+/).forEach(part => {
+        content.push({ text: part || ' ', style: 'story', margin: [0, 0, 0, 7] });
+      });
+
+      const definition = {
+        info: { title: 'Vystřihni pohádku!', author: 'Vystřihni pohádku!' },
+        pageSize: 'A4',
+        pageMargins: [54, 54, 54, 54],
+        content,
+        defaultStyle: { font: 'Roboto', fontSize: 11, lineHeight: 1.35, color: '#2d332e' },
+        styles: {
+          title: { fontSize: 23, bold: true, alignment: 'center', margin: [0, 0, 0, 18] },
+          sectionTitle: { fontSize: 15, bold: true },
+          source: { fontSize: 8.5, italics: true, color: '#6b6560' },
+          story: { fontSize: 11.5, lineHeight: 1.45 }
+        }
+      };
+
+      window.pdfMake.createPdf(definition).download('muj-pribeh.pdf');
+      status.textContent = 'PDF bylo připraveno ke stažení.';
+    } catch (e) {
+      console.error(e);
+      status.textContent = 'PDF se nepodařilo vytvořit. Zkontrolujte připojení k internetu a zkuste to znovu.';
+    } finally {
+      setExportBusy(false);
+    }
+  }
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null;
+  let dictating = false;
+
+  function setDictationState(active) {
+    dictating = active;
+    const button = $('dictate');
+    button.classList.toggle('active', active);
+    button.textContent = active ? '■ Zastavit diktování' : '🎤 Začít diktovat';
+    button.setAttribute('aria-pressed', active ? 'true' : 'false');
+  }
+
+  function appendDictatedText(text) {
+    const area = $('story');
+    const clean = String(text || '').trim();
+    if (!clean) return;
+    const before = area.value;
+    const separator = before && !/\s$/.test(before) ? ' ' : '';
+    area.value = before + separator + clean;
+    area.focus();
+    area.setSelectionRange(area.value.length, area.value.length);
+  }
+
+  function setupDictation() {
+    const button = $('dictate');
+    const status = $('speechStatus');
+
+    if (!SpeechRecognition) {
+      button.disabled = true;
+      button.textContent = 'Diktování není v tomto prohlížeči dostupné';
+      status.textContent = 'Pro diktování použijte například Chrome nebo Edge.';
+      return;
+    }
+
+    recognition = new SpeechRecognition();
+    recognition.lang = 'cs-CZ';
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    recognition.onstart = () => {
+      setDictationState(true);
+      status.textContent = 'Poslouchám… Mluvte česky. Text se bude průběžně doplňovat.';
+    };
+
+    recognition.onresult = (event) => {
+      let finalText = '';
+      let interimText = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) finalText += transcript;
+        else interimText += transcript;
+      }
+      if (finalText) appendDictatedText(finalText);
+      status.textContent = interimText ? `Rozpoznávám: ${interimText}` : 'Poslouchám…';
+    };
+
+    recognition.onerror = (event) => {
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        status.textContent = 'Pro diktování je potřeba povolit prohlížeči přístup k mikrofonu.';
+      } else if (event.error === 'no-speech') {
+        status.textContent = 'Nebyla zachycena řeč. Můžete diktování spustit znovu.';
+      } else {
+        status.textContent = 'Diktování bylo přerušeno. Zkuste ho spustit znovu.';
+      }
+      setDictationState(false);
+    };
+
+    recognition.onend = () => {
+      setDictationState(false);
+      if (!status.textContent || status.textContent.startsWith('Poslouchám') || status.textContent.startsWith('Rozpoznávám')) {
+        status.textContent = 'Diktování zastaveno.';
+      }
+    };
+
+    button.addEventListener('click', () => {
+      if (dictating) {
+        recognition.stop();
+      } else {
+        status.textContent = '';
+        try { recognition.start(); }
+        catch (_) { /* start can throw briefly after a previous stop */ }
+      }
+    });
+  }
+
+  setupDictation();
+
+  drawBtn.addEventListener('click', draw);
+  $('copy').addEventListener('click', async () => {
+    const t = $('story');
+    try {
+      await navigator.clipboard.writeText(t.value);
+      const b = $('copy'), old = b.textContent;
+      b.textContent = 'Zkopírováno';
+      setTimeout(() => b.textContent = old, 1200);
+    } catch (_) {
+      t.select(); document.execCommand('copy');
+    }
+  });
+  $('clear').addEventListener('click', () => { $('story').value = ''; $('exportStatus').textContent = ''; $('speechStatus').textContent = ''; });
+
+  const downloadStory = $('downloadStory');
+  const downloadChoices = $('downloadChoices');
+  function closeDownloadChoices() {
+    downloadChoices.hidden = true;
+    downloadStory.setAttribute('aria-expanded', 'false');
+  }
+  downloadStory.addEventListener('click', event => {
+    event.stopPropagation();
+    downloadChoices.hidden = !downloadChoices.hidden;
+    downloadStory.setAttribute('aria-expanded', downloadChoices.hidden ? 'false' : 'true');
+  });
+  $('downloadWord').addEventListener('click', () => { closeDownloadChoices(); downloadWord(); });
+  $('downloadPdf').addEventListener('click', () => { closeDownloadChoices(); downloadPdf(); });
+  document.addEventListener('click', event => {
+    if (!event.target.closest('.download-wrap')) closeDownloadChoices();
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') closeDownloadChoices();
+  });
+})();
+</script>
+  <script src="../typografie.js"></script>
+</body>
+</html>

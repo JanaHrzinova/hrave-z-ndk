@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Co dnes na stůl?</title>
+<style>
+:root{
+  --paper:#f3ead7;--ink:#3b2d23;--muted:#7a6a5b;--line:#d8c8ad;
+  --accent:#9d3b2f;--accent-dark:#7f2f26;--olive:#65704a;--shadow:rgba(76,55,35,.12);
+  --tile:#fffaf0;--tile-hover:#f7eddd
+}
+*{box-sizing:border-box}
+html{min-height:100%;background:#f3ead7}
+body{
+  margin:0;min-height:100vh;color:var(--ink);
+  font:16px/1.55 Georgia,"Times New Roman",serif;
+  background:
+    radial-gradient(circle at 20% 10%,rgba(255,255,255,.65),transparent 28%),
+    linear-gradient(180deg,#efe3cd 0%,#f7f0e3 42%,#efe6d8 100%);
+  background-repeat:no-repeat;background-size:100% 100%;background-attachment:fixed
+}
+main{max-width:1040px;margin:0 auto;padding:42px 18px 64px}
+.hero{text-align:center}
+.kicker{
+  font:700 13px/1.2 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--olive)
+}
+h1{font-size:clamp(2.3rem,5vw,4.2rem);line-height:1.04;margin:10px 0 12px}
+.lead{max-width:700px;margin:0 auto;color:var(--muted);font-size:1.06rem}
+.ornament{width:110px;height:1px;background:var(--line);margin:20px auto 28px;position:relative}
+.ornament:after{
+  content:"✦";position:absolute;left:50%;top:50%;transform:translate(-50%,-53%);
+  background:var(--paper);padding:0 10px;color:var(--accent)
+}
+.section-title{
+  text-align:center;
+  font-size:1.15rem;
+  margin:0 0 18px;
+  color:var(--ink)
+}
+.categories{
+  display:grid;
+  grid-template-columns:repeat(4,150px);
+  gap:12px;
+  width:max-content;
+  margin:18px auto 0
+}
+.category-btn{
+  appearance:none;
+  width:150px;
+  height:150px;
+  min-height:0;
+  border:0;
+  border-radius:3px;
+  background:#dfcfb7;
+  color:#302219;
+  padding:5px 6px 7px;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  gap:2px;
+  text-align:center;
+  box-shadow:0 3px 8px rgba(76,55,35,.13);
+  font:700 12px/1.1 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  transition:.18s ease;
+  overflow:hidden
+}
+.category-btn:hover{
+  background:#d2bfa2;
+  transform:translateY(-1px);
+  box-shadow:0 5px 13px rgba(76,55,35,.18)
+}
+.category-icon{
+  width:138px;
+  height:118px;
+  display:block;
+  color:#4a3529;
+  flex:0 0 auto
+}
+.category-icon *{
+  vector-effect:non-scaling-stroke
+}
+.category-photo{
+  object-fit:contain;
+  width:138px;
+  height:118px;
+  max-width:none;
+  border-radius:0;
+  background:transparent;
+  margin:0 auto
+}
+.category-label{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  min-height:20px;
+  text-align:center;
+  margin:0
+}
+.surprise-wrap{
+  display:flex;
+  justify-content:center;
+  max-width:636px;
+  margin:16px auto 28px
+}
+.surprise-wrap .primary{
+  width:100%;
+}
+.surprise-button{
+  display:grid !important;
+  grid-template-columns:52px 1fr 52px;
+  align-items:center
+}
+.surprise-button span{
+  grid-column:2;
+  justify-self:center
+}
+.surprise-icon{
+  width:34px;
+  height:34px;
+  grid-column:1;
+  justify-self:start
+}
+button.primary,a.btn{
+  appearance:none;border:0;border-radius:3px;padding:14px 22px;
+  font:700 15px/1.2 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;transition:.18s ease
+}
+button.primary{
+  background:var(--accent);color:#fff;box-shadow:0 5px 14px rgba(157,59,47,.24)
+}
+button.primary:hover{background:var(--accent-dark);transform:translateY(-1px)}
+button:disabled{opacity:.58;cursor:wait;transform:none}
+a.btn{background:#ece3d4;color:var(--ink)}
+a.btn:hover{background:#e2d6c3}
+.viewer{
+  display:none;background:rgba(255,250,240,.94);border:1px solid var(--line);
+  border-radius:18px;padding:18px;box-shadow:0 10px 30px var(--shadow);
+  max-width:980px;margin:0 auto
+}
+.viewer.show{display:block}
+.recipe-context{
+  text-align:center;
+  margin:0 0 14px;
+  color:var(--muted);
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  font-size:14px
+}
+.imgwrap{
+  background:#e8decd;border:1px solid var(--line);border-radius:14px;
+  overflow:hidden;display:flex;justify-content:center;align-items:center;min-height:180px;padding:12px
+}
+.imgwrap img{
+  display:block;max-width:100%;height:auto;background:#fff;
+  box-shadow:0 6px 18px rgba(0,0,0,.12)
+}
+.actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px}
+.error{
+  display:none;margin:18px auto 0;max-width:720px;color:#9d2a24;text-align:center;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif
+}
+.error.show{display:block}
+.back-wrap{
+  display:none;
+  justify-content:center;
+  margin:0 0 18px
+}
+.back-wrap.show{display:flex}
+.back-btn{
+  appearance:none;border:1px solid var(--line);border-radius:3px;padding:10px 16px;
+  background:#efe6d8;color:var(--ink);cursor:pointer;
+  font:600 14px/1.2 system-ui,-apple-system,Segoe UI,Roboto,sans-serif
+}
+.back-btn:hover{background:#e6d9c6}
+@media(max-width:700px){
+  main{padding-top:28px}
+  .categories{
+    grid-template-columns:repeat(2,150px);
+    gap:10px;
+    width:max-content
+  }
+  .viewer{padding:12px}
+}
+  .categories{
+    grid-template-columns:repeat(4,50px);
+    gap:8px;
+    width:max-content
+  }
+  .viewer{padding:12px}
+}
+  .categories{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    max-width:420px;
+    gap:9px
+  }
+  .viewer{padding:12px}
+  .category-btn{font-size:12px}
+}
+  .categories{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .viewer{padding:12px}
+}
+  .categories{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .viewer{padding:12px}
+  .category-icon{width:76px;height:76px}
+  .category-photo{width:90px;height:90px}
+}
+  .categories{grid-template-columns:1fr}
+  .viewer{padding:12px}
+  .category-btn{min-height:62px}
+}
+</style>
+
+<style id="category-grid-fix">
+.categories{
+  display:grid !important;
+  grid-template-columns:repeat(4,150px) !important;
+  grid-auto-rows:150px !important;
+  gap:12px !important;
+  width:636px !important;
+  max-width:636px !important;
+  margin:18px auto 0 !important;
+}
+.category-btn{
+  box-sizing:border-box !important;
+  position:relative !important;
+  width:150px !important;
+  min-width:150px !important;
+  max-width:150px !important;
+  height:150px !important;
+  min-height:150px !important;
+  max-height:150px !important;
+  margin:0 !important;
+  padding:5px 6px 7px !important;
+  overflow:hidden !important;
+}
+.category-photo,
+.category-btn .category-photo{
+  display:block !important;
+  width:138px !important;
+  max-width:138px !important;
+  height:116px !important;
+  max-height:116px !important;
+  object-fit:contain !important;
+  margin:0 auto !important;
+  flex:0 0 116px !important;
+}
+.category-label{
+  width:100% !important;
+  min-height:22px !important;
+  margin:0 !important;
+  padding:0 2px !important;
+  box-sizing:border-box !important;
+  overflow:visible !important;
+  font-size:12px !important;
+  line-height:1.05 !important;
+}
+.surprise-wrap{
+  width:636px !important;
+  max-width:636px !important;
+  margin:18px auto 28px !important;
+}
+@media(max-width:700px){
+  .categories{
+    grid-template-columns:repeat(2,150px) !important;
+    width:312px !important;
+    max-width:312px !important;
+  }
+  .surprise-wrap{
+    width:312px !important;
+    max-width:312px !important;
+  }
+}
+</style>
+
+
+<style id="surprise-star-fix">
+.surprise-btn,
+.surprise-wrap button{
+  position:relative !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
+.surprise-star{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:20px;
+  line-height:1;
+  font-weight:400;
+  color:#f3dfc2;
+}
+.surprise-star:first-child{left:18px;}
+.surprise-star:last-child{right:18px;}
+.surprise-label{
+  display:block;
+  text-align:center;
+}
+</style>
+
+
+<style id="surprise-brown-inline-stars">
+.surprise-btn,
+.surprise-wrap button{
+  background:#6b4932 !important;
+  color:#fff8ed !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:12px !important;
+}
+.surprise-star,
+.surprise-star:first-child,
+.surprise-star:last-child{
+  position:static !important;
+  top:auto !important;
+  left:auto !important;
+  right:auto !important;
+  transform:none !important;
+  display:inline-block !important;
+  color:#ead7b9 !important;
+  font-size:18px !important;
+  line-height:1 !important;
+}
+.surprise-label{
+  display:inline-block !important;
+  text-align:center !important;
+}
+</style>
+
+
+<style id="next-recipe-brown-fix">
+#anotherRecipe,
+#nextRecipe,
+.next-recipe,
+.recipe-actions .primary,
+.recipe-actions button:first-child {
+  background:#6b4932 !important;
+  color:#fff8ed !important;
+  border-color:#6b4932 !important;
+}
+</style>
+
+
+<style id="again-top-brown-fix">
+#againTop,
+#againTop.primary {
+  background:#6b4932 !important;
+  color:#fff8ed !important;
+  border-color:#6b4932 !important;
+  box-shadow:0 5px 14px rgba(76,55,35,.22) !important;
+}
+#againTop:hover,
+#againTop.primary:hover {
+  background:#5a3d2a !important;
+}
+</style>
+
+
+<style id="hub-navigation-style">
+  .hub-back-link{position:fixed;z-index:9999;top:12px;left:12px;display:inline-block;padding:8px 11px;background:rgba(255,255,255,.94);color:#27443d!important;border:1px solid rgba(39,68,61,.25);box-shadow:0 3px 12px rgba(0,0,0,.12);font:600 12px/1.2 Arial,sans-serif;text-decoration:none!important;backdrop-filter:blur(4px)}
+  .hub-back-link:hover,.hub-back-link:focus-visible{background:#fff;outline:2px solid rgba(39,68,61,.25);outline-offset:2px}
+  @media(max-width:600px){.hub-back-link{top:8px;left:8px;padding:7px 9px;font-size:11px}}
+</style>
+</head>
+<body>
+  <a class="hub-back-link" href="../index.html" aria-label="Zpět na rozcestník">← Všechny aplikace</a>
+
+<main>
+  <div class="hero">
+    <div class="kicker">Historické kulinářské tipy</div>
+    <h1>Co dnes na stůl?</h1>
+    <p class="lead">Nechte se inspirovat kuchařskými knihami z přelomu 19. a 20. století a prozkoumejte klasické i lehce obskurní recepty z Národní digitální knihovny.</p>
+    <div class="ornament"></div>
+  </div>
+
+  <section id="categoryScreen">
+    <h2 class="section-title">Na co máte dnes chuť?</h2>
+
+    <div class="categories">
+      <button class="category-btn" data-category="Polévky">
+        <img class="category-icon category-photo" src="images/polevky.png" alt="">
+        <span class="category-label">Polévky</span>
+      </button>
+      <button class="category-btn" data-category="Maso a drůbež">
+        <img class="category-icon category-photo" src="images/maso-drubez.png" alt="">
+        <span class="category-label">Maso a drůbež</span>
+      </button>
+      <button class="category-btn" data-category="Ryby">
+        <img class="category-icon category-photo" src="images/ryby.png" alt="">
+        <span class="category-label">Ryby</span>
+      </button>
+      <button class="category-btn" data-category="Bezmasá a zeleninová jídla">
+        <img class="category-icon category-photo" src="images/bezmasa-zeleninova.png" alt="">
+        <span class="category-label">Bezmasá a zeleninová jídla</span>
+      </button>
+      <button class="category-btn" data-category="Moučníky a sladká jídla">
+        <img class="category-icon category-photo" src="images/moucniky-a-sladka-jidla.png" alt="">
+        <span class="category-label">Moučníky a sladká jídla</span>
+      </button>
+      <button class="category-btn" data-category="Přílohy, omáčky a saláty">
+        <img class="category-icon category-photo" src="images/prilohy-omacky-salaty.png" alt="">
+        <span class="category-label">Přílohy, omáčky a saláty</span>
+      </button>
+      <button class="category-btn" data-category="Zavařeniny a konzervování">
+        <img class="category-icon category-photo" src="images/zavareniny.png" alt="">
+        <span class="category-label">Zavařeniny a konzervování</span>
+      </button>
+      <button class="category-btn" data-category="Nápoje">
+        <img class="category-icon category-photo" src="images/napoje.png" alt="">
+        <span class="category-label">Nápoje</span>
+      </button>
+    </div>
+
+    <div class="surprise-wrap">
+      <button id="surprise" class="primary surprise-button"><span class="surprise-star" aria-hidden="true">✦</span><span class="surprise-label">Nechám se překvapit</span><span class="surprise-star" aria-hidden="true">✦</span></button>
+    </div>
+  </section>
+
+  <div id="backWrap" class="back-wrap">
+    <button id="backBtn" class="back-btn">← Zpět na výběr kategorií</button>
+  </div>
+
+  <section id="viewer" class="viewer">
+    <div id="recipeContext" class="recipe-context"></div>
+    <div class="imgwrap">
+      <img id="recipeImg" alt="Výstřižek receptu z historické kuchařské knihy">
+    </div>
+    <div class="actions">
+      <button id="againTop" class="primary">Vybrat další recept</button>
+      <a id="openNdk" class="btn" target="_blank" rel="noopener">Otevřít knihu v Národní digitální knihovně</a>
+    </div>
+  </section>
+
+  <div id="error" class="error"></div>
+</main>
+
+<script src="recepty.js"></script>
+<script>
+(() => {
+  
+
+  const $ = id => document.getElementById(id);
+  let recipes = null;
+  let busy = false;
+  let activeCategory = null;
+  let lastIndex = -1;
+
+  async function loadRecipes() {
+    if (recipes) return recipes;
+
+    if (!Array.isArray(window.RECEPTY)) {
+      throw new Error('Soubor recepty.js se nepodařilo načíst.');
+    }
+
+    recipes = window.RECEPTY;
+    return recipes;
+  }
+
+  function normalizeCategory(v) {
+    return String(v || '').trim();
+  }
+
+  function parseRecipe(item) {
+    const clip = item.clip || item.url;
+    const iiif = item.iiif || item.info || item.infoJson;
+    const category = normalizeCategory(item.category);
+
+    if (!clip || !iiif) throw new Error('Záznam receptu nemá odkaz na výstřižek nebo IIIF.');
+
+    const u = new URL(clip);
+    const bb = (u.searchParams.get('bb') || '').split(',').map(Number);
+    if (bb.length !== 4 || bb.some(n => !Number.isFinite(n))) {
+      throw new Error('Záznam receptu nemá platný parametr bb.');
+    }
+
+    const service = String(iiif)
+      .replace(/\/info\.json(?:\?.*)?$/i, '')
+      .replace(/\/$/, '');
+
+    return {
+      clip,
+      service,
+      category,
+      region: bb.map(n => Math.round(n)).join(',')
+    };
+  }
+
+  function candidates(service, region) {
+    return [
+      `${service}/${region}/1000,/0/default.jpg`,
+      `${service}/${region}/max/0/default.jpg`,
+      `${service}/${region}/full/0/default.jpg`
+    ];
+  }
+
+  function loadImage(url) {
+    return new Promise((resolve, reject) => {
+      const img = $('recipeImg');
+      img.onload = () => resolve(url);
+      img.onerror = reject;
+      img.src = url;
+    });
+  }
+
+  async function showRecipeImage(recipe) {
+    for (const url of candidates(recipe.service, recipe.region)) {
+      try {
+        await loadImage(url);
+        return;
+      } catch {}
+    }
+    throw new Error('Výstřižek se nepodařilo načíst.');
+  }
+
+  function filteredRecipes(list) {
+    if (!activeCategory) return list;
+    return list.filter(r => normalizeCategory(r.category) === activeCategory);
+  }
+
+  async function chooseRecipe(category = activeCategory) {
+    if (busy) return;
+    busy = true;
+    $('error').classList.remove('show');
+    $('error').textContent = '';
+
+    activeCategory = category || null;
+
+    try {
+      const list = await loadRecipes();
+      const pool = filteredRecipes(list);
+
+      if (!pool.length) {
+        const label = activeCategory ? `Kategorie „${activeCategory}“` : 'Seznam receptů';
+        throw new Error(`${label} zatím neobsahuje žádný recept.`);
+      }
+
+      let idx;
+      if (pool.length === 1) {
+        idx = 0;
+      } else {
+        do { idx = Math.floor(Math.random() * pool.length); }
+        while (idx === lastIndex);
+      }
+      lastIndex = idx;
+
+      const recipe = parseRecipe(pool[idx]);
+      await showRecipeImage(recipe);
+
+      $('openNdk').href = recipe.clip;
+      $('recipeContext').textContent =
+        activeCategory ? activeCategory : 'Náhodný výběr ze všech kategorií';
+
+      $('categoryScreen').style.display = 'none';
+      $('viewer').classList.add('show');
+      $('backWrap').classList.add('show');
+    } catch (e) {
+      $('error').textContent = e.message || 'Recept se nepodařilo načíst.';
+      $('error').classList.add('show');
+    } finally {
+      busy = false;
+    }
+  }
+
+  document.querySelectorAll('.category-btn').forEach(btn => {
+    btn.addEventListener('click', () => chooseRecipe(btn.dataset.category));
+  });
+
+  $('surprise').addEventListener('click', () => chooseRecipe(null));
+  $('againTop').addEventListener('click', () => chooseRecipe(activeCategory));
+
+  $('backBtn').addEventListener('click', () => {
+    $('viewer').classList.remove('show');
+    $('backWrap').classList.remove('show');
+    $('categoryScreen').style.display = '';
+    $('error').classList.remove('show');
+    activeCategory = null;
+    lastIndex = -1;
+  });
+})();
+</script>
+  <script src="../typografie.js"></script>
+</body>
+</html>

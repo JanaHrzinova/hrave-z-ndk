@@ -46,27 +46,14 @@ Jednotlivé aplikace obsahují odkazy na zdrojové dokumenty nebo nahrávky, aby
 
 Aplikace jsou vytvořené jako statický web v HTML, CSS a JavaScriptu. Nevyžadují vlastní serverovou aplikaci ani databázi. Část obsahu – například obrazová data, zvukové nahrávky a knihovny používané při exportu – se načítá z externích online zdrojů, a proto je pro plnou funkčnost potřeba připojení k internetu.
 
-Součástí projektu je společný skript `typografie.js`, který upravuje české předložky a spojky tak, aby nezůstávaly samostatně na konci řádku.
-
-## Struktura projektu
+Projekt obsahuje společný rozcestník a tři samostatné aplikace:
 
 ```text
 /
 ├── index.html
-├── README.md
-├── .nojekyll
-├── .gitignore
-├── typografie.js
-├── assets/
 ├── co-dnes-na-stul/
-│   ├── index.html
-│   ├── recepty.js
-│   └── images/
 ├── atlas-ptaku/
-│   └── index.html
 └── vystrihni-pohadku/
-    ├── index.html
-    └── obrazky.js
 ```
 
 ## Autorství
